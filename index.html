@@ -19,6 +19,32 @@
         <h1 class="text-4xl font-extrabold text-center text-white mb-6 tracking-wide">
             My Shopping List
         </h1>
+        
+        <!-- Manage List Section - Moved to the top -->
+        <div class="flex flex-col items-stretch space-y-2 mb-6 p-4 rounded-xl bg-gray-900 border-2 border-gray-700">
+            <h2 class="text-xl font-bold text-center text-gray-400">Manage List</h2>
+            <div class="flex items-center space-x-2">
+                <input
+                    type="file"
+                    id="fileInput"
+                    accept=".txt"
+                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+                />
+                <button
+                    id="importButton"
+                    class="bg-emerald-600 text-white p-2 rounded-xl hover:bg-emerald-700 transition-colors font-semibold shadow-md active:scale-95 w-32"
+                >
+                    Import
+                </button>
+            </div>
+            <button
+                id="exportButton"
+                class="bg-yellow-500 text-white p-2 rounded-xl hover:bg-yellow-600 transition-colors font-semibold shadow-md active:scale-95"
+            >
+                Export List
+            </button>
+            <div id="messageBox" class="text-sm text-center mt-2 font-medium"></div>
+        </div>
 
         <!-- Input and Add Button Section -->
         <div class="flex items-center space-x-2 mb-6">
@@ -36,33 +62,6 @@
             </button>
         </div>
         
-        <!-- Import from File Section -->
-        <div class="flex flex-col items-stretch space-y-2 mb-6 p-4 rounded-xl bg-gray-900 border-2 border-gray-700">
-            <h2 class="text-xl font-bold text-center text-gray-400">Manage List</h2>
-            <div class="flex items-center space-x-2">
-                <input
-                    type="file"
-                    id="fileInput"
-                    accept=".txt"
-                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
-                />
-                <button
-                    id="importButton"
-                    class="bg-emerald-600 text-white p-2 rounded-xl hover:bg-emerald-700 transition-colors font-semibold shadow-md active:scale-95 w-32"
-                >
-                    Import
-                </button>
-            </div>
-            <!-- Export button added here -->
-            <button
-                id="exportButton"
-                class="bg-yellow-500 text-white p-2 rounded-xl hover:bg-yellow-600 transition-colors font-semibold shadow-md active:scale-95"
-            >
-                Export List
-            </button>
-            <div id="messageBox" class="text-sm text-center mt-2 font-medium"></div>
-        </div>
-
         <!-- Shopping List Items -->
         <ul id="shoppingList" class="space-y-3">
             <!-- Items will be dynamically added here by the JavaScript -->
