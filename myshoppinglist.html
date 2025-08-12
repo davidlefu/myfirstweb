@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List App</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to handle the checked state */
+        .checked {
+            text-decoration: line-through;
+            color: #9ca3af; /* Gray text for checked items */
+        }
+    </style>
+</head>
+<body class="bg-slate-900 flex items-center justify-center min-h-screen p-4 font-[Inter] bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-gray-700 via-gray-900 to-black">
+    <div class="bg-gray-800 text-white rounded-3xl shadow-2xl p-8 max-w-lg w-full transform transition-all hover:scale-105 duration-300">
+        <h1 class="text-4xl font-extrabold text-center text-white mb-6 tracking-wide">
+            My Shopping List
+        </h1>
+
+        <!-- Input and Add Button Section -->
+        <div class="flex items-center space-x-2 mb-6">
+            <input
+                type="text"
+                id="itemInput"
+                placeholder="What do you need?"
+                class="flex-grow p-4 rounded-xl border-2 border-gray-700 bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors shadow-inner"
+            />
+            <button
+                id="addButton"
+                class="bg-indigo-600 text-white p-4 rounded-xl hover:bg-indigo-700 transition-all font-semibold shadow-md active:scale-95"
+            >
+                Add
+            </button>
+        </div>
+        
+        <!-- Import from File Section -->
+        <div class="flex flex-col items-stretch space-y-2 mb-6 p-4 rounded-xl bg-gray-900 border-2 border-gray-700">
+            <h2 class="text-xl font-bold text-center text-gray-400">Manage List</h2>
+            <div class="flex items-center space-x-2">
+                <input
+                    type="file"
+                    id="fileInput"
+                    accept=".txt"
+                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+                />
+                <button
+                    id="importButton"
+                    class="bg-emerald-600 text-white p-2 rounded-xl hover:bg-emerald-700 transition-colors font-semibold shadow-md active:scale-95 w-32"
+                >
+                    Import
+                </button>
+            </div>
+            <!-- Export button added here -->
+            <button
+                id="exportButton"
+                class="bg-yellow-500 text-white p-2 rounded-xl hover:bg-yellow-600 transition-colors font-semibold shadow-md active:scale-95"
+            >
+                Export List
+            </button>
+            <div id="messageBox" class="text-sm text-center mt-2 font-medium"></div>
+        </div>
+
+        <!-- Shopping List Items -->
+        <ul id="shoppingList" class="space-y-3">
+            <!-- Items will be dynamically added here by the JavaScript -->
+        </ul>
+    </div>
+
+    <script>
+        // Get references to the HTML elements
+        const itemInput = document.getElementById('itemInput');
+        const addButton = document.getElementById('addButton');
+        const shoppingList = document.getElementById('shoppingList');
+        const fileInput = document.getElementById('fileInput');
+        const importButton = document.getElementById('importButton');
+        const exportButton = document.getElementById('exportButton');
+        const messageBox = document.getElementById('messageBox');
+
+        // Function to create a new list item
+        function createListItem(text) {
+            // Create the list item element
+            const li = document.createElement('li');
+            li.className = 'flex items-center bg-gray-700 rounded-xl p-4 shadow-md transition-all hover:bg-gray-600 duration-200 ease-in-out';
+
+            // Create the checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'mr-4 h-6 w-6 text-indigo-500 rounded-md border-gray-500 bg-gray-800 focus:ring-indigo-400 transition-colors cursor-pointer';
+
+            // Create the span for the item text
+            const itemText = document.createElement('span');
+            itemText.textContent = text;
+            itemText.className = 'flex-grow text-gray-200 text-lg font-medium';
+
+            // Create the delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'ml-4 cursor-pointer text-gray-400 hover:text-red-500 transition-colors active:scale-95';
+            deleteButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            `;
+
+            // Append the elements to the list item
+            li.appendChild(checkbox);
+            li.appendChild(itemText);
+            li.appendChild(deleteButton);
+
+            return li;
+        }
+        
+        // Function to display a message in the message box
+        function displayMessage(text, color) {
+            messageBox.textContent = text;
+            messageBox.className = `text-sm text-center mt-2 font-medium ${color}`;
+            setTimeout(() => {
+                messageBox.textContent = '';
+                messageBox.className = 'text-sm text-center mt-2 font-medium';
+            }, 3000);
+        }
+
+        // Function to handle adding a new item
+        function addItem() {
+            const itemText = itemInput.value.trim();
+            if (itemText !== '') {
+                const newListItem = createListItem(itemText);
+                shoppingList.appendChild(newListItem);
+                itemInput.value = ''; // Clear the input field
+                itemInput.focus();
+            }
+        }
+
+        // Function to handle importing items from a file
+        function importItemsFromFile() {
+            const file = fileInput.files[0];
+            if (!file) {
+                displayMessage('Please select a file first.', 'text-red-400');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                const items = content.split(/\r?\n/).filter(line => line.trim() !== ''); // Split by new lines and filter empty ones
+                
+                if (items.length === 0) {
+                    displayMessage('File is empty or contains no valid items.', 'text-red-400');
+                    return;
+                }
+
+                items.forEach(item => {
+                    const newListItem = createListItem(item.trim());
+                    shoppingList.appendChild(newListItem);
+                });
+                displayMessage(`Successfully imported ${items.length} items.`, 'text-green-400');
+                fileInput.value = ''; // Clear the file input
+            };
+
+            reader.onerror = () => {
+                displayMessage('Error reading file.', 'text-red-400');
+            };
+
+            reader.readAsText(file);
+        }
+        
+        // Function to handle exporting the list to a file
+        function exportListToFile() {
+            const listItems = Array.from(shoppingList.querySelectorAll('li span'));
+            if (listItems.length === 0) {
+                displayMessage('Your list is empty. Nothing to export.', 'text-red-400');
+                return;
+            }
+            
+            const listContent = listItems.map(item => item.textContent).join('\n');
+            const blob = new Blob([listContent], { type: 'text/plain' });
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'shopping-list.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            
+            displayMessage('Your list has been exported!', 'text-yellow-400');
+        }
+
+        // Add event listener for the 'Add' button
+        addButton.addEventListener('click', addItem);
+
+        // Add event listener for the 'Enter' key in the input field
+        itemInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // Add event listener for the 'Import List' button
+        importButton.addEventListener('click', importItemsFromFile);
+        
+        // Add event listener for the 'Export List' button
+        exportButton.addEventListener('click', exportListToFile);
+
+        // Add a single event listener to the shopping list for toggling and deleting
+        shoppingList.addEventListener('click', (event) => {
+            const clickedElement = event.target;
+            const listItem = clickedElement.closest('li');
+
+            if (!listItem) return; // Exit if the click wasn't inside a list item
+
+            // Find the checkbox and text within the list item
+            const checkbox = listItem.querySelector('input[type="checkbox"]');
+            const itemText = listItem.querySelector('span');
+            const deleteButton = listItem.querySelector('button');
+
+            // Handle checkbox clicks
+            if (clickedElement === checkbox) {
+                if (checkbox.checked) {
+                    itemText.classList.add('checked');
+                    // Move the list item to the end of the list
+                    shoppingList.appendChild(listItem);
+                } else {
+                    itemText.classList.remove('checked');
+                }
+            }
+
+            // Handle delete button clicks
+            if (clickedElement === deleteButton || deleteButton.contains(clickedElement)) {
+                listItem.remove();
+            }
+        });
+
+    </script>
+</body>
+</html>
