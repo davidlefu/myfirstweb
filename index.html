@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       /* Custom styles to handle the checked state */
-      .checked {
+      .checked-item .checked {
         text-decoration: line-through;
         color: #9ca3af; /* Gray text for checked items */
       }
@@ -104,6 +104,16 @@
         itemText.textContent = text;
         itemText.className = "flex-grow text-gray-200 text-lg font-medium";
 
+        // Create the new "push to bottom" button
+        const pushButton = document.createElement("button");
+        pushButton.className =
+          "ml-2 cursor-pointer text-gray-400 hover:text-indigo-500 transition-colors active:scale-95 push-button";
+        pushButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
+                </svg>
+            `;
+
         // Create the delete button
         const deleteButton = document.createElement("button");
         deleteButton.className =
@@ -117,6 +127,7 @@
         // Append the elements to the list item
         li.appendChild(checkbox);
         li.appendChild(itemText);
+        li.appendChild(pushButton); // New button added here
         li.appendChild(deleteButton);
 
         return li;
@@ -234,19 +245,35 @@
 
         if (!listItem) return; // Exit if the click wasn't inside a list item
 
-        // Find the checkbox and text within the list item
         const checkbox = listItem.querySelector('input[type="checkbox"]');
         const itemText = listItem.querySelector("span");
-        const deleteButton = listItem.querySelector("button");
+        const deleteButton = listItem.querySelector("button:last-child");
+        const pushButton = listItem.querySelector(".push-button");
 
-        // Handle checkbox clicks
+        // Handle checkbox clicks (moves to very bottom of the list)
         if (clickedElement === checkbox) {
           if (checkbox.checked) {
             itemText.classList.add("checked");
-            // Move the list item to the end of the list
             shoppingList.appendChild(listItem);
           } else {
             itemText.classList.remove("checked");
+          }
+        }
+
+        // Handle "push to bottom of unchecked" button clicks
+        if (
+          clickedElement === pushButton ||
+          pushButton.contains(clickedElement)
+        ) {
+          // Find the first checked item to act as a divider
+          const firstCheckedItem = shoppingList.querySelector("li .checked");
+
+          // FIX: Check if an item is found before attempting to move
+          if (firstCheckedItem) {
+            shoppingList.insertBefore(listItem, firstCheckedItem.closest("li"));
+          } else {
+            // If no items are checked, simply move it to the end of the list.
+            shoppingList.appendChild(listItem);
           }
         }
 
