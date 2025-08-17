@@ -7,13 +7,12 @@
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Custom styles to handle the checked state */
       .checked {
         text-decoration: line-through;
-        color: #9ca3af; /* Gray text for checked items */
+        color: #9ca3af;
       }
       .profile-btn.active {
-        background-color: #6366f1; /* Indigo-500 */
+        background-color: #6366f1;
         color: #fff;
         border-color: #6366f1;
         box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3),
@@ -43,9 +42,7 @@
         <div
           id="profileButtons"
           class="flex flex-wrap justify-center gap-2 mb-4"
-        >
-          <!-- Profile buttons will be dynamically added here -->
-        </div>
+        ></div>
         <div class="flex items-center space-x-2">
           <input
             type="text"
@@ -118,13 +115,10 @@
       </div>
 
       <!-- Shopping List Items -->
-      <ul id="shoppingList" class="space-y-3">
-        <!-- Items will be dynamically added here by the JavaScript -->
-      </ul>
+      <ul id="shoppingList" class="space-y-3"></ul>
     </div>
 
     <script>
-      // Get references to the HTML elements
       const itemInput = document.getElementById("itemInput");
       const addButton = document.getElementById("addButton");
       const shoppingList = document.getElementById("shoppingList");
@@ -143,13 +137,11 @@
       let activeProfile =
         localStorage.getItem("activeShoppingListProfile") || null;
 
-      // Function to save all profiles to local storage
       function saveProfiles() {
         localStorage.setItem("shoppingListProfiles", JSON.stringify(profiles));
         localStorage.setItem("activeShoppingListProfile", activeProfile);
       }
 
-      // Function to create a new list item
       function createListItem(text) {
         const li = document.createElement("li");
         li.className =
@@ -168,19 +160,19 @@
         pushButton.className =
           "ml-2 cursor-pointer text-gray-400 hover:text-indigo-500 transition-colors active:scale-95 push-button";
         pushButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
-                </svg>
-            `;
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
+          </svg>
+        `;
 
         const deleteButton = document.createElement("button");
         deleteButton.className =
           "ml-4 cursor-pointer text-gray-400 hover:text-red-500 transition-colors active:scale-95";
         deleteButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            `;
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        `;
 
         li.appendChild(checkbox);
         li.appendChild(itemText);
@@ -190,10 +182,14 @@
         return li;
       }
 
-      // Function to render the shopping list for the active profile
+      // ✅ Fixed renderShoppingList
       function renderShoppingList() {
-        shoppingList.innerHTML = ""; // Clear the current list
+        shoppingList.innerHTML = "";
+
         if (activeProfile && profiles[activeProfile]) {
+          const unchecked = [];
+          const checked = [];
+
           profiles[activeProfile].forEach((item) => {
             const li = createListItem(item.name);
             const checkbox = li.querySelector('input[type="checkbox"]');
@@ -202,15 +198,18 @@
             if (item.checked) {
               checkbox.checked = true;
               textSpan.classList.add("checked");
-              shoppingList.appendChild(li); // Checked items go to the bottom
+              checked.push(li);
             } else {
-              shoppingList.prepend(li); // Unchecked items go to the top
+              unchecked.push(li);
             }
           });
+
+          // Append in proper order: unchecked first, then checked
+          unchecked.forEach((li) => shoppingList.appendChild(li));
+          checked.forEach((li) => shoppingList.appendChild(li));
         }
       }
 
-      // Function to display a message in the message box
       function displayMessage(text, color, targetMessageBox) {
         targetMessageBox.textContent = text;
         targetMessageBox.className = `text-sm text-center mt-2 font-medium ${color}`;
@@ -220,7 +219,6 @@
         }, 3000);
       }
 
-      // Function to handle adding a new item
       function addItem() {
         if (!activeProfile) {
           displayMessage(
@@ -240,7 +238,6 @@
         }
       }
 
-      // Function to handle importing items from a file
       function importItemsFromFile() {
         if (!activeProfile) {
           displayMessage(
@@ -296,7 +293,6 @@
         reader.readAsText(file);
       }
 
-      // Function to handle exporting the list to a file
       function exportListToFile() {
         if (!activeProfile) {
           displayMessage(
@@ -334,7 +330,6 @@
         );
       }
 
-      // Function to render the profile buttons
       function renderProfileButtons() {
         profileButtonsContainer.innerHTML = "";
         const profileNames = Object.keys(profiles);
@@ -354,7 +349,6 @@
         });
       }
 
-      // Function to add a new profile
       function addProfile() {
         const profileName = profileInput.value.trim();
         if (profileName === "") {
@@ -389,7 +383,6 @@
         renderShoppingList();
       }
 
-      // Function to delete the active profile
       function deleteProfile() {
         if (!activeProfile) {
           displayMessage(
@@ -410,35 +403,29 @@
           renderProfileButtons();
           renderShoppingList();
           displayMessage(
-            `Profile "${activeProfile}" deleted.`,
+            `Profile deleted.`,
             "text-green-400",
             profileMessageBox
           );
         }
       }
 
-      // Add event listeners
       addButton.addEventListener("click", addItem);
       itemInput.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-          addItem();
-        }
+        if (event.key === "Enter") addItem();
       });
       importButton.addEventListener("click", importItemsFromFile);
       exportButton.addEventListener("click", exportListToFile);
       addProfileBtn.addEventListener("click", addProfile);
       deleteProfileBtn.addEventListener("click", deleteProfile);
       profileInput.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-          addProfile();
-        }
+        if (event.key === "Enter") addProfile();
       });
 
       shoppingList.addEventListener("click", (event) => {
         if (!activeProfile) return;
         const clickedElement = event.target;
         const listItem = clickedElement.closest("li");
-
         if (!listItem) return;
 
         const checkbox = listItem.querySelector('input[type="checkbox"]');
@@ -453,7 +440,7 @@
         if (clickedElement === checkbox) {
           profiles[activeProfile][itemIndex].checked = checkbox.checked;
           saveProfiles();
-          renderShoppingList(); // Re-render to move checked items to the bottom
+          renderShoppingList();
         }
 
         if (
@@ -499,7 +486,6 @@
             newSpan.className = "flex-grow text-gray-200 text-lg font-medium";
             li.replaceChild(newSpan, input);
 
-            // Update the list in the profiles object
             const itemIndex = profiles[activeProfile].findIndex(
               (item) => item.name === currentText
             );
@@ -508,7 +494,6 @@
               saveProfiles();
             }
 
-            // Reapply the 'checked' class if necessary
             const checkbox = li.querySelector('input[type="checkbox"]');
             if (checkbox.checked) {
               newSpan.classList.add("checked");
@@ -517,14 +502,11 @@
 
           input.addEventListener("blur", saveEdit);
           input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-              saveEdit();
-            }
+            if (e.key === "Enter") saveEdit();
           });
         }
       });
 
-      // Initial setup
       renderProfileButtons();
       renderShoppingList();
     </script>
