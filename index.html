@@ -219,6 +219,7 @@
         }, 3000);
       }
 
+      // ✅ New items now go on top of unchecked
       function addItem() {
         if (!activeProfile) {
           displayMessage(
@@ -230,7 +231,7 @@
         }
         const itemText = itemInput.value.trim();
         if (itemText !== "") {
-          profiles[activeProfile].push({ name: itemText, checked: false });
+          profiles[activeProfile].unshift({ name: itemText, checked: false }); // 👈 use unshift
           saveProfiles();
           renderShoppingList();
           itemInput.value = "";
