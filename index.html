@@ -510,6 +510,146 @@
 
       renderProfileButtons();
       renderShoppingList();
+
+      // ⬆️ Move item up
+      function moveItemUp(profile, index) {
+        if (index > 0) {
+          const temp = profiles[profile][index];
+          profiles[profile][index] = profiles[profile][index - 1];
+          profiles[profile][index - 1] = temp;
+          saveProfiles();
+          renderShoppingList();
+        }
+      }
+
+      // ⬇️ Move item down
+      function moveItemDown(profile, index) {
+        if (index < profiles[profile].length - 1) {
+          const temp = profiles[profile][index];
+          profiles[profile][index] = profiles[profile][index + 1];
+          profiles[profile][index + 1] = temp;
+          saveProfiles();
+          renderShoppingList();
+        }
+      }
+
+      // ✅ Modify createListItem to add up/down buttons
+      function createListItem(text) {
+        const li = document.createElement("li");
+        li.className =
+          "flex items-center bg-gray-700 rounded-xl p-4 shadow-md transition-all hover:bg-gray-600 duration-200 ease-in-out";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className =
+          "mr-4 h-6 w-6 text-indigo-500 rounded-md border-gray-500 bg-gray-800 focus:ring-indigo-400 transition-colors cursor-pointer";
+
+        const itemText = document.createElement("span");
+        itemText.textContent = text;
+        itemText.className = "flex-grow text-gray-200 text-lg font-medium";
+
+        // ⬆️ Up Button
+        const upButton = document.createElement("button");
+        upButton.className =
+          "ml-2 cursor-pointer text-gray-400 hover:text-green-500 transition-colors active:scale-95 move-up";
+        upButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+      </svg>
+    `;
+
+        // ⬇️ Down Button
+        const downButton = document.createElement("button");
+        downButton.className =
+          "ml-2 cursor-pointer text-gray-400 hover:text-blue-500 transition-colors active:scale-95 move-down";
+        downButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    `;
+
+        const pushButton = document.createElement("button");
+        pushButton.className =
+          "ml-2 cursor-pointer text-gray-400 hover:text-indigo-500 transition-colors active:scale-95 push-button";
+        pushButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
+      </svg>
+    `;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className =
+          "ml-4 cursor-pointer text-gray-400 hover:text-red-500 transition-colors active:scale-95";
+        deleteButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    `;
+
+        li.appendChild(checkbox);
+        li.appendChild(itemText);
+        li.appendChild(upButton);
+        li.appendChild(downButton);
+        li.appendChild(pushButton);
+        li.appendChild(deleteButton);
+
+        return li;
+      }
+
+      // ✅ Extend event delegation for up/down buttons
+      shoppingList.addEventListener("click", (event) => {
+        if (!activeProfile) return;
+        const clickedElement = event.target;
+        const listItem = clickedElement.closest("li");
+        if (!listItem) return;
+
+        const checkbox = listItem.querySelector('input[type="checkbox"]');
+        const deleteButton = listItem.querySelector("button:last-child");
+        const pushButton = listItem.querySelector(".push-button");
+        const upButton = listItem.querySelector(".move-up");
+        const downButton = listItem.querySelector(".move-down");
+        const itemText = listItem.querySelector("span").textContent;
+
+        const itemIndex = profiles[activeProfile].findIndex(
+          (item) => item.name === itemText
+        );
+
+        if (clickedElement === checkbox) {
+          profiles[activeProfile][itemIndex].checked = checkbox.checked;
+          saveProfiles();
+          renderShoppingList();
+        }
+
+        if (clickedElement === upButton || upButton.contains(clickedElement)) {
+          moveItemUp(activeProfile, itemIndex);
+        }
+
+        if (
+          clickedElement === downButton ||
+          downButton.contains(clickedElement)
+        ) {
+          moveItemDown(activeProfile, itemIndex);
+        }
+
+        if (
+          clickedElement === pushButton ||
+          pushButton.contains(clickedElement)
+        ) {
+          const itemToMove = profiles[activeProfile].splice(itemIndex, 1)[0];
+          profiles[activeProfile].push(itemToMove);
+          saveProfiles();
+          renderShoppingList();
+        }
+
+        if (
+          clickedElement === deleteButton ||
+          deleteButton.contains(clickedElement)
+        ) {
+          profiles[activeProfile].splice(itemIndex, 1);
+          saveProfiles();
+          renderShoppingList();
+        }
+      });
     </script>
   </body>
 </html>
